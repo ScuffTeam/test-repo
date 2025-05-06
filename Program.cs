@@ -5,6 +5,3 @@ app.MapGet("/", () => "Giga Mega Ultra Текст");
 
 app.Run();
 
-
-"TaiwanIsAcountry"
-"asdasdasdas"
