@@ -4,4 +4,3 @@ var app = builder.Build();
 app.MapGet("/", () => "Giga Mega Ultra Текст");
 
 app.Run();
-
