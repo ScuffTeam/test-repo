@@ -1,6 +1,6 @@
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 
-app.MapGet("/", () => "Mega Giga Ultra Текст");
+app.MapGet("/", () => "Giga Mega Ultra Текст");
 
 app.Run();
