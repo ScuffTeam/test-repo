@@ -1,0 +1,126 @@
+import "@typespec/http";
+using TypeSpec.Http;
+
+@service({ title: "Education API" })
+namespace EducationApi;
+
+// === Модели данных ===
+@error
+model Error {
+  code: int32;
+  message: string;
+}
+
+model User {
+  id: string;
+  email: string;
+  username: string;
+  role: "user" | "admin";
+  createdAt: string;
+}
+
+model AuthRequest {
+  email: string;
+  password: string;
+  username?: string;
+}
+
+model AuthResponse {
+  user: User;
+  token: string;
+}
+
+model ScheduleItem {
+  id: string;
+  subject: string;
+  teacher: string;
+  time: string; // "HH:MM-HH:MM"
+  date: string; // "YYYY-MM-DD"
+}
+
+model ScheduleList {
+  items: ScheduleItem[];
+  totalCount: int32;
+}
+
+// === Авторизация и регистрация ===
+@route("/auth")
+@tag("Auth")
+interface Auth {
+  /**
+   * Регистрация нового пользователя
+   * @body данные пользователя
+   */
+  @post register(@body request: AuthRequest): AuthResponse | Error;
+
+  /**
+   * Авторизация пользователя
+   * @body данные для входа
+   */
+  @post login(@body request: AuthRequest): AuthResponse | Error;
+
+  /**
+   * Обновление токена
+   * @body { "refreshToken": string }
+   */
+  @post refresh(@body refreshToken: string): AuthResponse | Error;
+}
+
+// === Работа с расписанием ===
+@route("/schedules")
+@tag("Schedules")
+interface Schedules {
+  /**
+   * Получить расписание по ID пользователя
+   * @param userId ID пользователя
+   */
+  @get getSchedule(@path userId: string): ScheduleList | Error;
+
+  /**
+   * Создать/обновить расписание
+   * @param userId ID пользователя
+   */
+  @post updateSchedule(@path userId: string, @body items: ScheduleItem[]): ScheduleList | Error;
+
+  /**
+   * Удалить расписание
+   * @param userId ID пользователя
+   */
+  @delete deleteSchedule(@path userId: string): void | Error;
+}
+
+// === Административные функции ===
+@route("/admin/users")
+@tag("Admin")
+interface AdminUsers {
+  /**
+   * Получить список всех пользователей
+   * Требуется токен администратора
+   */
+  @authenticated
+  @get getAllUsers(
+    @query page: int32 = 1,
+    @query limit: int32 = 10
+  ): Array<User> | Error;
+
+  /**
+   * Создать нового пользователя (admin)
+   * @body данные пользователя
+   */
+  @authenticated
+  @post createUser(@body user: User): User | Error;
+
+  /**
+   * Обновить данные пользователя (admin)
+   * @param userId ID пользователя
+   */
+  @authenticated
+  @put updateUser(@path userId: string, @body user: User): User | Error;
+
+  /**
+   * Удалить пользователя (admin)
+   * @param userId ID пользователя
+   */
+  @authenticated
+  @delete deleteUser(@path userId: string): void | Error;
+}
